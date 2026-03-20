@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invoice Generator</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="print.css" media="print">
+    <!-- jsPDF for PDF download -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <!-- Navigation -->
+        <nav class="nav-bar">
+            <h1>📄 Invoice Management System</h1>
+            <div class="nav-buttons">
+                <button onclick="showSection('create')" class="nav-btn active" id="createBtn">Create Invoice</button>
+                <button onclick="showSection('search')" class="nav-btn" id="searchBtn">Search Invoices</button>
+                <button onclick="showSection('analytics')" class="nav-btn" id="analyticsBtn">Analytics</button>
+                <button onclick="showSection('settings')" class="nav-btn" id="settingsBtn">Settings</button>
+            </div>
+        </nav>
+
+        <!-- Create Invoice Section -->
+        <section id="createSection" class="section active">
+            <div class="form-container">
+                <h2>Create New Invoice</h2>
+                
+                <!-- Customer Details -->
+                <div class="form-group">
+                    <label>Name & Address: </label>
+                    <textarea id="customerAddress" rows="4" placeholder="Enter customer name and full address"></textarea>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Party GSTIN:</label>
+                        <input type="text" id="partyGSTIN" placeholder="Enter Party GSTIN ">
+                    </div>
+                    <div class="form-group">
+                        <label>Invoice No:</label>
+                        <input type="text" id="invoiceNo" placeholder="Enter invoice number">
+                    </div>
+                    <div class="form-group">
+                        <label>Date:</label>
+                        <input type="date" id="invoiceDate">
+                    </div>
+                </div>
+
+                <!-- Product Details -->
+                <h3>Product/Service Details</h3>
+                <div class="product-section">
+                    <table class="product-table">
+                        <thead>
+                            <tr>
+                                <th>Sl.No</th>
+                                <th>Product/Service Description</th>
+                                <th>HSN/SAN</th>
+                                <th>GST Rate (%)</th>
+                                <th>Qty</th>
+                                <th>Rate</th>
+                                <th>Amount</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="productTableBody">
+                        </tbody>
+                    </table>
+                    <button onclick="addProductRow()" class="btn-add">+ Add Product</button>
+                </div>
+
+                <!-- Totals -->
+                <div class="totals-section">
+                    <div class="total-row">
+                        <span>Subtotal:</span>
+                        <span id="subtotal">₹0.00</span>
+                    </div>
+                    <div class="total-row">
+                        <span>CGST:</span>
+                        <span id="cgstAmount">₹0.00</span>
+                    </div>
+                    <div class="total-row">
+                        <span>SGST:</span>
+                        <span id="sgstAmount">₹0.00</span>
+                    </div>
+                    <div class="total-row grand-total">
+                        <span>Grand Total:</span>
+                        <span id="grandTotal">₹0.00</span>
+                    </div>
+                </div>
+
+                <div class="action-buttons">
+                    <button onclick="generateInvoice()" class="btn-primary">Generate Invoice</button>
+                    <button onclick="resetForm()" class="btn-secondary">Reset</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Search Section -->
+        <section id="searchSection" class="section">
+            <div class="search-container">
+                <h2>Search Invoices</h2>
+                <div class="search-box">
+                    <input type="text" id="searchInput" placeholder="Search by Invoice No, Customer Name, or Date">
+                    <button onclick="searchInvoices()" class="btn-primary">Search</button>
+                    <select id="paymentFilter" onchange="searchInvoices()" style="padding: 12px; background: var(--bg-dark); border: 1px solid var(--border-color); border-radius: 5px; color: var(--text-light);">
+                        <option value="">All Invoices</option>
+                        <option value="paid">Paid</option>
+                        <option value="unpaid">Unpaid</option>
+                        <option value="partial">Partial</option>
+                    </select>
+                </div>
+                <div id="searchResults" class="search-results"></div>
+            </div>
+        </section>
+
+        <!-- Customers Section -->
+        <section id="customersSection" class="section">
+            <div class="search-container">
+                <h2>👥 Customer Database</h2>
+                <div class="search-box">
+                    <input type="text" id="customerSearchInput" placeholder="Search customers..." onkeyup="searchCustomers()">
+                    <button onclick="showAddCustomerForm()" class="btn-primary">+ Add Customer</button>
+                </div>
+                <div id="customersList" class="search-results"></div>
+            </div>
+        </section>
+
+        <!-- Reports Section -->
+        <section id="reportsSection" class="section">
+            <div class="search-container">
+                <h2>📊 Reports</h2>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>From Date:</label>
+                        <input type="date" id="reportFromDate">
+                    </div>
+                    <div class="form-group">
+                        <label>To Date:</label>
+                        <input type="date" id="reportToDate">
+                    </div>
+                    <div class="form-group">
+                        <label>&nbsp;</label>
+                        <button onclick="generateReport()" class="btn-primary" style="width: 100%;">Generate Report</button>
+                    </div>
+                </div>
+                
+                <div id="reportContent" style="margin-top: 30px;"></div>
+                
+                <div style="margin-top: 20px; text-align: center;">
+                    <button onclick="exportToExcel()" class="btn-primary">📥 Export to Excel</button>
+                    <button onclick="printReport()" class="btn-secondary">🖨️ Print Report</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Analytics Section -->
+        <section id="analyticsSection" class="section">
+            <div class="search-container">
+                <h2>📊 Business Analytics</h2>
+                <div class="analytics-grid">
+                    <div class="stat-card">
+                        <h3>Total Invoices</h3>
+                        <p class="stat-value" id="totalInvoices">0</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Total Revenue</h3>
+                        <p class="stat-value" id="totalRevenue">₹0</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>This Month</h3>
+                        <p class="stat-value" id="monthRevenue">₹0</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Average Invoice</h3>
+                        <p class="stat-value" id="avgInvoice">₹0</p>
+                    </div>
+                </div>
+                <div style="margin-top: 30px;">
+                    <h3>Top Customers</h3>
+                    <div id="topCustomers" class="top-customers"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Settings Section -->
+        <section id="settingsSection" class="section">
+            <div class="search-container">
+                <h2>⚙️ Settings</h2>
+                <div class="settings-form">
+                    <h3>Company Information</h3>
+                    <div class="form-group">
+                        <label>Company Name:</label>
+                        <input type="text" id="companyName" value="SINCHANA ENTERPRISES">
+                    </div>
+                    <div class="form-group">
+                        <label>Company Address:</label>
+                        <textarea id="companyAddress" rows="2">"Yashodharma", 15th Cross, 60ft Road, Vinoba nagar, Shimoga-577204</textarea>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>GSTIN:</label>
+                            <input type="text" id="companyGSTIN" value="29AAQFO2153A1ZR">
+                        </div>
+                        <div class="form-group">
+                            <label>Mobile:</label>
+                            <input type="text" id="companyMobile" value="9740238565">
+                        </div>
+                        <div class="form-group">
+                            <label>Email:</label>
+                            <input type="email" id="companyEmail" value="sinchanaenterprises@gmail.com">
+                        </div>
+                    </div>
+                    
+                    <h3 style="margin-top: 30px;">Bank Details</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Bank Name:</label>
+                            <input type="text" id="bankName" value="STATE BANK OF INDIA">
+                        </div>
+                        <div class="form-group">
+                            <label>Branch:</label>
+                            <input type="text" id="bankBranch" value="Ravindranagara Branch, Shimoga">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Account Number:</label>
+                            <input type="text" id="accountNumber" value="41961364313">
+                        </div>
+                        <div class="form-group">
+                            <label>IFSC Code:</label>
+                            <input type="text" id="ifscCode" value="SBIN0040270">
+                        </div>
+                    </div>
+                    
+                    <div style="margin-top: 30px;">
+                        <button onclick="saveSettings()" class="btn-primary">Save Settings</button>
+                        <button onclick="resetSettings()" class="btn-secondary">Reset to Default</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Invoice Preview Modal -->
+        <div id="invoiceModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Invoice Preview</h2>
+                    <span class="close" onclick="closeModal()">&times;</span>
+                </div>
+                <div class="modal-body">
+                    <div id="invoicePreview" class="invoice-preview"></div>
+                </div>
+                <div class="modal-footer">
+                    <button onclick="enableEdit()" class="btn-secondary" id="editBtn">Edit</button>
+                    <button onclick="downloadPDF()" class="btn-primary" id="pdfBtn">Download PDF</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="logo-data.js"></script>
+    <script src="db.js"></script>
+    <script src="app.js"></script>
+    <script>
+        // Debug: Check if functions are loaded
+        console.log('Checking if functions exist:');
+        console.log('showSection:', typeof showSection);
+        console.log('addProductRow:', typeof addProductRow);
+        console.log('generateInvoice:', typeof generateInvoice);
+    </script>
+</body>
+</html>
