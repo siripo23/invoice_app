@@ -322,7 +322,9 @@ function _renderInvoicePreview(modal, preview, settings) {
     currentInvoice.sgst       = parseFloat(currentInvoice.sgst)       || 0;
     currentInvoice.grandTotal = parseFloat(currentInvoice.grandTotal) || 0;
 
+    var logoSrc = settings.logoData || (typeof LOGO_DATA_URL !== 'undefined' ? LOGO_DATA_URL : '');
     var B = 'border:1px solid #000;';
+
     var productsHTML = '';
     for (var i = 0; i < 10; i++) {
         var p = currentInvoice.products[i];
@@ -371,7 +373,7 @@ function _renderInvoicePreview(modal, preview, settings) {
     '<div style="display:flex;justify-content:space-between;font-size:12px;font-weight:bold;margin-bottom:2px;"><span>GSTIN: ' + companyGSTIN + '</span><span>MOB No: ' + companyMobile + '</span></div>' +
     '<div style="text-align:center;font-weight:bold;font-size:15px;letter-spacing:2px;padding:2px 0;">TAX INVOICE</div>' +
     '<div style="display:flex;align-items:center;justify-content:center;gap:12px;padding:2px 0;">' +
-    '<img src="' + LOGO_DATA_URL + '" style="width:75px;height:auto;">' +
+    '<img src="' + logoSrc + '" style="width:75px;height:auto;">' +
     '<div style="text-align:center;"><div class="big">' + companyName + '</div><div style="font-size:12px;color:#333;margin-top:2px;">' + companyAddress + '</div></div>' +
     '</div>' +
     '<div style="border-top:2px solid #000;margin:4px 0;"></div>' +
@@ -604,6 +606,20 @@ function numberToWords(num) {
     }
 }
 
+function handleLogoUpload(event) {
+    var file = event.target.files[0];
+    if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function(e) {
+        var dataUrl = e.target.result;
+        document.getElementById('logoPreview').src = dataUrl;
+        document.getElementById('logoPreview').style.display = 'block';
+        document.getElementById('logoFileName').textContent = file.name;
+        window._pendingLogoData = dataUrl;
+    };
+    reader.readAsDataURL(file);
+}
+
 function resetForm() {
     document.getElementById('customerAddress').value = '';
     document.getElementById('partyGSTIN').value = '';
@@ -684,6 +700,12 @@ function loadSettings() {
         document.getElementById('bankBranch').value = settings.bankBranch || '';
         document.getElementById('accountNumber').value = settings.accountNumber || '';
         document.getElementById('ifscCode').value = settings.ifscCode || '';
+        if (settings.logoData) {
+            document.getElementById('logoPreview').src = settings.logoData;
+            document.getElementById('logoPreview').style.display = 'block';
+            document.getElementById('logoFileName').textContent = 'Saved logo';
+            window._pendingLogoData = settings.logoData;
+        }
     }).catch(function() {});
 }
 
@@ -697,7 +719,8 @@ function saveSettings() {
         bankName: document.getElementById('bankName').value,
         bankBranch: document.getElementById('bankBranch').value,
         accountNumber: document.getElementById('accountNumber').value,
-        ifscCode: document.getElementById('ifscCode').value
+        ifscCode: document.getElementById('ifscCode').value,
+        logoData: window._pendingLogoData || ''
     };
     invoiceDB.saveSettings(settings).then(function() {
         alert('Settings saved successfully!');
