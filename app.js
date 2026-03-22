@@ -367,8 +367,10 @@ function _renderInvoicePreview(modal, preview, settings) {
     if (gstBreakdown[18]) { cgst18 = gstBreakdown[18] * 0.09;  sgst18 = cgst18; }
     var totalCGST = cgst5 + cgst12 + cgst18;
     var totalSGST = sgst5 + sgst12 + sgst18;
-    var invoiceTotal = currentInvoice.subtotal + totalCGST + totalSGST;
-    var amountInWords = numberToWords(invoiceTotal);
+    var invoiceTotal = parseFloat((currentInvoice.subtotal + totalCGST + totalSGST).toFixed(2));
+    var invoiceTotalRounded = Math.round(invoiceTotal);
+    var roundOff = parseFloat((invoiceTotalRounded - invoiceTotal).toFixed(2));
+    var amountInWords = numberToWords(invoiceTotalRounded);
 
     var html =
     '<div id="bill-print" style="width:210mm;background:#fff;color:#000;font-family:\'Roboto\',sans-serif;font-size:13px;margin:0 auto;box-sizing:border-box;padding:8mm;">' +
@@ -408,8 +410,8 @@ function _renderInvoicePreview(modal, preview, settings) {
     '<tr style="font-weight:bold;"><td style="' + B + 'padding:3px 6px;">TOTAL</td><td style="' + B + 'text-align:right;padding:3px 6px;">' + currentInvoice.subtotal.toFixed(2) + '</td></tr>' +
     '<tr><td style="' + B + 'padding:3px 6px;">CGST</td><td style="' + B + 'text-align:right;padding:3px 6px;">' + totalCGST.toFixed(2) + '</td></tr>' +
     '<tr><td style="' + B + 'padding:3px 6px;">SGST</td><td style="' + B + 'text-align:right;padding:3px 6px;">' + totalSGST.toFixed(2) + '</td></tr>' +
-    '<tr><td style="' + B + 'padding:3px 6px;">Round off()</td><td style="' + B + 'text-align:right;padding:3px 6px;">0.00</td></tr>' +
-    '<tr style="font-weight:bold;"><td style="' + B + 'padding:3px 6px;">Invoice Amount</td><td style="' + B + 'text-align:right;padding:3px 6px;">\u20B9' + invoiceTotal.toFixed(2) + '</td></tr>' +
+    '<tr><td style="' + B + 'padding:3px 6px;">Round off()</td><td style="' + B + 'text-align:right;padding:3px 6px;">' + (roundOff >= 0 ? '+' : '') + roundOff.toFixed(2) + '</td></tr>' +
+    '<tr style="font-weight:bold;"><td style="' + B + 'padding:3px 6px;">Invoice Amount</td><td style="' + B + 'text-align:right;padding:3px 6px;">\u20B9' + invoiceTotalRounded.toFixed(2) + '</td></tr>' +
     '</table></td></tr></table>' +
     '<table><tr><td style="' + B + 'font-size:12px;"><strong>Bank Details:</strong> ' + companyName + ' &nbsp;|&nbsp; ' + bankName + ', ' + bankBranch + '</td></tr>' +
     '<tr><td style="' + B + 'font-size:12px;"><strong>A/c No:</strong> ' + accountNumber + ' &nbsp;|&nbsp; <strong>IFSC:</strong> ' + ifscCode + '</td></tr></table>' +
