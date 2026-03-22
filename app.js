@@ -579,7 +579,6 @@ function formatDate(dateString) {
     var year = date.getFullYear();
     return day + '.' + month + '.' + year;
 }
-
 function numberToWords(num) {
     var ones = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine'];
     var tens = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
