@@ -322,7 +322,7 @@ function _renderInvoicePreview(modal, preview, settings) {
     currentInvoice.sgst       = parseFloat(currentInvoice.sgst)       || 0;
     currentInvoice.grandTotal = parseFloat(currentInvoice.grandTotal) || 0;
 
-    var logoSrc = settings.logoData || (typeof LOGO_DATA_URL !== 'undefined' ? LOGO_DATA_URL : '');
+    var logoSrc = settings.logoData || '';
     var B = 'border:1px solid #000;';
 
     var productsHTML = '';
